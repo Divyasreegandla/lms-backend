@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+   
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get('token');
+    
+    if (tokenFromUrl) {
+        
+        localStorage.setItem("token", tokenFromUrl);
+        
+       
+        try {
+            const payload = JSON.parse(atob(tokenFromUrl.split('.')[1]));
+            localStorage.setItem("username", payload.name || payload.email || "User");
+        } catch(e) {
+            localStorage.setItem("username", "Social User");
+        }
+        
+       
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        console.log("Social login successful!");
+    }
+</script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🎓 LMS</h2>
+                <p>Learning Management System</p>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-page="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-page="attendance">
+                    <span class="nav-icon">📅</span>
+                    <span>Attendance</span>
+                </button>
+                <button class="nav-item" data-page="assignments">
+                    <span class="nav-icon">📄</span>
+                    <span>Assignments</span>
+                </button>
+                <button class="nav-item" data-page="notifications">
+                    <span class="nav-icon">🔔</span>
+                    <span>Notifications</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">👤</div>
+                    <div class="user-details">
+                        <span id="userName">Student</span>
+                        <span id="userEmail">student@example.com</span>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page active">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <p>Welcome back. Your LMS workspace is connected and ready.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📚</div>
+                        <div class="stat-info">
+                            <h3>Courses</h3>
+                            <div class="stat-value" id="courseCount">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <h3>Attendance</h3>
+                            <div class="stat-value" id="attendancePercent">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-info">
+                            <h3>Assignments</h3>
+                            <div class="stat-value" id="assignmentCount">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔔</div>
+                        <div class="stat-info">
+                            <h3>Notifications</h3>
+                            <div class="stat-value" id="notificationCount">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Attendance Overview</h3>
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+
+                <div class="project-summary">
+                    <h3>Recent Activity</h3>
+                    <div id="recentActivity" style="margin-top: 15px;"></div>
+                    <div class="status-badge">Live</div>
+                </div>
+            </div>
+
+            <!-- Attendance Page -->
+            <div id="attendancePage" class="page">
+                <div class="page-header">
+                    <h1>Attendance Management</h1>
+                    <p>Track class participation and review detailed reports.</p>
+                </div>
+
+                <div class="card">
+                    <h3>Mark Attendance</h3>
+                    <div class="form-row">
+                        <input type="number" id="att_course_id" placeholder="Course ID">
+                        <input type="date" id="att_date">
+                    </div>
+                    <div id="studentsList">
+                        <div class="student-row">
+                            <input type="number" placeholder="Student ID">
+                            <select>
+                                <option>Present</option>
+                                <option>Absent</option>
+                            </select>
+                            <button class="btn-remove" onclick="removeStudentRow(this)">✖</button>
+                        </div>
+                    </div>
+                    <button class="btn-add" onclick="addStudentRow()">+ Add Student Record</button>
+                    <button class="btn-primary" onclick="submitAttendance()">Submit Attendance</button>
+                </div>
+
+                <div class="card">
+                    <h3>Get Student Attendance</h3>
+                    <div class="form-row">
+                        <input type="number" id="get_student_id" placeholder="Student ID">
+                        <input type="number" id="get_course_id" placeholder="Course ID">
+                    </div>
+                    <button class="btn-primary" onclick="fetchStudentAttendance()">Get Student Attendance</button>
+                    <div id="attendanceResult" class="result-box"></div>
+                </div>
+            </div>
+
+            <!-- Assignments Page -->
+            <div id="assignmentsPage" class="page">
+                <div class="page-header">
+                    <h1>Assignments</h1>
+                    <p>Manage academic tasks — create, submit and evaluate assignments.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="card">
+                        <h3>Create Assignment</h3>
+                        <input type="text" id="assign_title" placeholder="Assignment Title">
+                        <textarea id="assign_desc" placeholder="Description" rows="3"></textarea>
+                        <input type="date" id="assign_deadline">
+                        <input type="number" id="assign_course_id" placeholder="Course ID">
+                        <input type="file" id="assign_file">
+                        <button class="btn-primary" onclick="createAssignmentAPI()">Create Assignment</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Submit Assignment</h3>
+                        <input type="number" id="submit_assign_id" placeholder="Assignment ID">
+                        <input type="number" id="submit_student_id" placeholder="Student ID">
+                        <input type="file" id="submit_file">
+                        <button class="btn-primary" onclick="submitAssignmentAPI()">Submit Assignment</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Grade Submission</h3>
+                        <input type="number" id="grade_submission_id" placeholder="Submission ID">
+                        <input type="text" id="grade_value" placeholder="Grade (A / B / 90 etc)">
+                        <textarea id="grade_remarks" placeholder="Remarks" rows="2"></textarea>
+                        <button class="btn-primary" onclick="gradeSubmission()">Submit Grade</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>All Submissions</h3>
+                    <button class="btn-secondary" onclick="loadSubmissions()">Load Submissions</button>
+                    <div id="submissionsList" class="data-table"></div>
+                </div>
+            </div>
+
+            <!-- Notifications Page -->
+            <div id="notificationsPage" class="page">
+                <div class="page-header">
+                    <h1>Notifications</h1>
+                    <p>View user notifications and update their status.</p>
+                </div>
+
+                <div class="card">
+                    <h3>Get Notifications</h3>
+                    <div class="form-row">
+                        <input type="number" id="notif_user_id" placeholder="User ID">
+                        <button class="btn-primary" onclick="fetchNotifications()">Fetch Notifications</button>
+                    </div>
+                    <div id="notificationsTable" class="data-table"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Mark Notification Read</h3>
+                    <div class="form-row">
+                        <input type="number" id="mark_notif_id" placeholder="Notification ID">
+                        <button class="btn-primary" onclick="markNotificationRead()">Mark as Read</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

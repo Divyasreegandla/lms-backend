@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./django_app",
+        "./fastapi_app/LMSauth"
+    ]
+}

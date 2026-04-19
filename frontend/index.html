@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS Portal - Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-left">
+            <div class="logo">🎓 LMS</div>
+            <h1>Learning Management System</h1>
+            <p>FastAPI + React admin frontend</p>
+            <div class="features">
+                <div class="feature">
+                    <span class="feature-icon">📊</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">📅</span>
+                    <span>Attendance</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">📄</span>
+                    <span>Assignments</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🔔</span>
+                    <span>Notifications</span>
+                </div>
+            </div>
+            <div class="services-info">
+                <p>Auth API → 8001</p>
+                <p>Main API → 8001</p>
+                <p>Frontend → 3000</p>
+            </div>
+        </div>
+
+        <div class="login-right">
+            <div class="login-tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" onclick="switchTab('otp')">OTP Login</button>
+            </div>
+
+            <!-- Normal Login Tab -->
+            <div id="loginTab" class="tab-content active">
+                <div class="login-box">
+                    <h2>Secure Access</h2>
+                    <p class="subtitle">Login using OTP verification or connected social providers.</p>
+                    
+                    <input type="text" id="username" placeholder="Username" value="Divya">
+                    <input type="password" id="password" placeholder="Password" value="1234">
+                    
+                    <button class="btn-primary" onclick="login()">Login</button>
+                    
+                    <div class="divider">OR</div>
+                    
+                    <div class="social-login">
+                        <button class="social-btn google" onclick="googleLogin()">
+                            <span>G</span> Continue with Google
+                        </button>
+                        <button class="social-btn facebook" onclick="facebookLogin()">
+                            <span>f</span> Continue with Facebook
+                        </button>
+                        <button class="social-btn github" onclick="githubLogin()">
+                            <span>GH</span> Continue with GitHub
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OTP Login Tab -->
+            <div id="otpTab" class="tab-content">
+                <div class="login-box">
+                    <h2>OTP Verification</h2>
+                    <p class="subtitle">Enter the OTP sent to your email/phone</p>
+                    
+                    <input type="text" id="otp_phone" placeholder="Phone Number">
+                    <button class="btn-secondary" onclick="sendOTP()">Send OTP</button>
+                    
+                    <input type="text" id="otp_code" placeholder="Enter OTP">
+                    <button class="btn-primary" onclick="verifyOTP()">Verify OTP</button>
+                    
+                    <div id="otpMessage" class="message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
