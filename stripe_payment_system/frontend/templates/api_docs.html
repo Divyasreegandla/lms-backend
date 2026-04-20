@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #6772e5;
+            text-align: center;
+        }
+        .endpoint {
+            background: white;
+            border-radius: 8px;
+            margin: 15px 0;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .method {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .GET { background: #28a745; color: white; }
+        .POST { background: #007bff; color: white; }
+        .url {
+            font-family: monospace;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .description {
+            margin: 10px 0;
+            color: #666;
+        }
+        .code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        button {
+            background: #6772e5;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #5461c9;
+        }
+        .status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .online {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💳 Stripe Payment API Documentation</h1>
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <span class="status online">🟢 FastAPI: Port 8000</span>
+            <span class="status online">🟢 Django: Port 8002</span>
+        </div>
+
+        <h2>FastAPI Endpoints</h2>
+
+        <!-- Health Check -->
+        <div class="endpoint">
+            <span class="method GET">GET</span>
+            <span class="url">/health</span>
+            <div class="description">Check if server is running</div>
+            <div class="code">curl http://localhost:8000/health</div>
+            <button onclick="testApi('http://localhost:8000/health')">Test</button>
+        </div>
+
+        <!-- Products -->
+        <div class="endpoint">
+            <span class="method GET">GET</span>
+            <span class="url">/api/products</span>
+            <div class="description">Get all courses and plans</div>
+            <div class="code">curl http://localhost:8000/api/products</div>
+            <button onclick="testApi('http://localhost:8000/api/products')">Test</button>
+        </div>
+
+        <!-- Create Checkout -->
+        <div class="endpoint">
+            <span class="method POST">POST</span>
+            <span class="url">/api/create-checkout-session</span>
+            <div class="description">Create Stripe checkout session</div>
+            <div class="code">
+                curl -X POST http://localhost:8000/api/create-checkout-session \<br>
+                &nbsp;&nbsp;-d "item_type=course" \<br>
+                &nbsp;&nbsp;-d "item_id=1" \<br>
+                &nbsp;&nbsp;-d "user_id=1" \<br>
+                &nbsp;&nbsp;-d "user_email=test@example.com"
+            </div>
+            <button onclick="testCheckout()">Test Checkout</button>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="endpoint">
+            <span class="method GET">GET</span>
+            <span class="url">/dashboard</span>
+            <div class="description">View all products in grid</div>
+            <div class="code">http://localhost:8000/dashboard</div>
+            <button onclick="window.open('http://localhost:8000/dashboard', '_blank')">Open Dashboard</button>
+        </div>
+
+        <!-- Checkout Page -->
+        <div class="endpoint">
+            <span class="method GET">GET</span>
+            <span class="url">/checkout/course/1</span>
+            <div class="description">Course checkout page</div>
+            <div class="code">http://localhost:8000/checkout/course/1</div>
+            <button onclick="window.open('http://localhost:8000/checkout/course/1', '_blank')">Open Checkout</button>
+        </div>
+
+        <!-- Payment Status -->
+        <div class="endpoint">
+            <span class="method GET">GET</span>
+            <span class="url">/api/payment-status/{session_id}</span>
+            <div class="description">Check payment status</div>
+            <div class="code">curl http://localhost:8000/api/payment-status/cs_test_xxxxx</div>
+        </div>
+
+        <!-- API Docs -->
+        <div class="endpoint">
+            <span class="method GET">GET</span>
+            <span class="url">/api-docs</span>
+            <div class="description">This documentation page</div>
+            <div class="code">http://localhost:8000/api-docs</div>
+        </div>
+
+        <h2>Django Endpoints</h2>
+
+        <!-- Django Admin -->
+        <div class="endpoint">
+            <span class="method GET">GET</span>
+            <span class="url">/admin</span>
+            <div class="description">Django admin panel</div>
+            <div class="code">http://localhost:8002/admin</div>
+            <button onclick="window.open('http://localhost:8002/admin', '_blank')">Open Admin</button>
+        </div>
+
+        <!-- Transactions -->
+        <div class="endpoint">
+            <span class="method GET">GET</span>
+            <span class="url">/api/transactions/</span>
+            <div class="description">Get all transactions</div>
+            <div class="code">curl http://localhost:8002/api/transactions/</div>
+            <button onclick="testApi('http://localhost:8002/api/transactions/')">Test</button>
+        </div>
+
+        <h2>Test Cards</h2>
+        <div class="endpoint">
+            <div class="description">
+                <strong>✅ Success:</strong> 4242 4242 4242 4242<br>
+                <strong>🔐 3D Secure:</strong> 4000 0025 0000 3155<br>
+                <strong>❌ Decline:</strong> 4000 0000 0000 0002<br>
+                <em>Use any future expiry date and any 3-digit CVC</em>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function testApi(url) {
+            window.open(url, '_blank');
+        }
+
+        async function testCheckout() {
+            const formData = new URLSearchParams();
+            formData.append('item_type', 'course');
+            formData.append('item_id', '1');
+            formData.append('user_id', '1');
+            formData.append('user_email', 'test@example.com');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success && data.session_url) {
+                    window.open(data.session_url, '_blank');
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to create session'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: white; text-align: center; margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        .card h3 { margin-bottom: 10px; color: #333; }
+        .price { font-size: 24px; color: #667eea; margin: 10px 0; }
+        button {
+            background: #6772e5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover { background: #5461c9; }
+        .section { margin-bottom: 40px; }
+        .section h2 { color: white; margin-bottom: 20px; }
+        .test-cards {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 LMS Learning Platform</h1>
+        
+        <div class="section">
+            <h2>📚 Courses</h2>
+            <div class="grid">
+                {% for id, course in courses.items() %}
+                <div class="card">
+                    <h3>{{ course.name }}</h3>
+                    <p>{{ course.description }}</p>
+                    <div class="price">${{ "%.2f"|format(course.price) }}</div>
+                    <button onclick="purchase('course', {{ id }})">Buy Now</button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⭐ Premium Plans</h2>
+            <div class="grid">
+                {% for id, plan in plans.items() %}
+                <div class="card">
+                    <h3>{{ plan.name }}</h3>
+                    <p>{{ plan.description }}</p>
+                    <div class="price">${{ "%.2f"|format(plan.price) }}/month</div>
+                    <button onclick="purchase('plan', {{ id }})">Upgrade</button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="test-cards">
+            <h3>💳 Test Cards</h3>
+            <p>✅ Success: <code>4242 4242 4242 4242</code></p>
+            <p>🔐 3D Secure: <code>4000 0025 0000 3155</code></p>
+            <p>❌ Decline: <code>4000 0000 0000 0002</code></p>
+        </div>
+    </div>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        const stripePublicKey = '{{ stripe_publishable_key }}';
+        
+        async function purchase(itemType, itemId) {
+            try {
+                const formData = new URLSearchParams();
+                formData.append('item_type', itemType);
+                formData.append('item_id', itemId);
+                formData.append('user_id', '1');
+                formData.append('user_email', 'student@example.com');
+                
+                const response = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    const stripe = Stripe(stripePublicKey);
+                    await stripe.redirectToCheckout({ sessionId: data.session_id });
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Payment error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

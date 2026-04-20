@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - {{ product.name }}</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { max-width: 500px; width: 100%; }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        h1 { color: #333; margin-bottom: 10px; font-size: 28px; }
+        .price { font-size: 48px; font-weight: bold; color: #667eea; margin: 20px 0; }
+        .btn {
+            background: #6772e5;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(103,114,229,0.3); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .test-cards {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7f7f7;
+            border-radius: 10px;
+            font-size: 12px;
+            text-align: left;
+        }
+        .test-cards code { background: white; padding: 2px 5px; border-radius: 3px; }
+        .error { color: red; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>{{ product.name }}</h1>
+            <div class="price">${{ "%.2f"|format(product.price) }}</div>
+            <button id="checkout-button" class="btn">Pay with Stripe 💳</button>
+            <div id="error-message" class="error"></div>
+            <div class="test-cards">
+                <strong>Test Cards:</strong><br>
+                ✅ Success: <code>4242 4242 4242 4242</code><br>
+                🔐 3D Secure: <code>4000 0025 0000 3155</code><br>
+                ❌ Decline: <code>4000 0000 0000 0002</code>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Get Stripe publishable key from server
+        const stripePublicKey = '{{ stripe_publishable_key }}';
+        
+        if (!stripePublicKey || stripePublicKey === '') {
+            document.getElementById('error-message').innerText = 'Stripe key not configured. Please check .env file';
+            document.getElementById('error-message').style.display = 'block';
+            console.error('Stripe publishable key is missing');
+        }
+        
+        // Initialize Stripe
+        const stripe = Stripe(stripePublicKey);
+        const checkoutButton = document.getElementById('checkout-button');
+        
+        checkoutButton.addEventListener('click', async () => {
+            checkoutButton.disabled = true;
+            checkoutButton.textContent = 'Processing...';
+            
+            try {
+                // Get product details
+                const itemType = '{{ item_type }}';
+                const itemId = '{{ item_id }}';
+                const userId = '{{ user_id }}';
+                const userEmail = '{{ user_email }}';
+                
+                console.log('Creating checkout session for:', { itemType, itemId, userId, userEmail });
+                
+                // Create form data
+                const formData = new URLSearchParams();
+                formData.append('item_type', itemType);
+                formData.append('item_id', itemId);
+                formData.append('user_id', userId);
+                formData.append('user_email', userEmail);
+                
+                // Call your backend to create checkout session
+                const response = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                console.log('Response:', data);
+                
+                if (data.success && data.session_id) {
+                    // Redirect to Stripe checkout
+                    const result = await stripe.redirectToCheckout({
+                        sessionId: data.session_id
+                    });
+                    
+                    if (result.error) {
+                        throw new Error(result.error.message);
+                    }
+                } else {
+                    throw new Error(data.error || 'Failed to create checkout session');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('error-message').innerText = error.message;
+                document.getElementById('error-message').style.display = 'block';
+                checkoutButton.disabled = false;
+                checkoutButton.textContent = 'Pay with Stripe 💳';
+                
+                // Auto hide error after 5 seconds
+                setTimeout(() => {
+                    document.getElementById('error-message').style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>
